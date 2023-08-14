@@ -8,7 +8,6 @@ const users = new Schema({
     name: { type: String },
     socketId: { type: String },
     is_online: { type: Boolean },
-    avatar: { type: String }
   }, {
     timestamps: true,
 });

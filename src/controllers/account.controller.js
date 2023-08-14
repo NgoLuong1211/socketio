@@ -20,5 +20,30 @@ var that = module.exports = {
         }
         res.cookie('user', user)
         return res.redirect('/chat/message')
+    },
+    registerverifi: async(req, res) => {
+        const {
+            account,
+            password,
+            name
+        } = req.body;
+        const user = await _user.findOne({
+            $or: [
+                {account: account},
+                {name: name}
+            ]
+        })
+        if(user){
+            return res.json('tài khoản hoặc tên đã có người dùng!!!!')
+        }
+        await _user.create({
+            account: account,
+            password: password,
+            name: name,
+            socketId: '123',
+            is_online: false
+        })
+        return res.redirect('/')
+
     }
 }
