@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <title>Document</title>
+</head>
+
+
+<body>
+  <input type="hidden" id="ip_user" value="<%= user %>">
+  <div style="display: flex;">
+    <div class="list">
+      <div class="btn-list">
+        <button id="list-online">online</button>
+        <button id="list-friend">bạn bè</button>
+        <button id="list-group">nhóm</button>
+      </div>
+      <ul class="list_user"></ul>
+    </div>
+  
+    <div class="container">
+      <div id="tools">
+        <div id="out-group">rời nhóm</div>
+        <div id="list-member">thành viên nhóm</div>
+      </div>
+      <h3 id="userreceiver"></h3>
+      <ul id="ul_mes"></ul>
+  
+      <div class="container_send">
+        <input style="width: 75%;" type="text" placeholder="message" id="ip_message">
+        <img style="width: 15%; display: none;" id="img_mes" alt="">
+        <input type="file" id="ip_image" style="width: 25%;">
+        <button id="btn_send">Gửi</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+    const tool = document.getElementById('tools')
+    const btn_outgroup = document.getElementById('out-group')
+    const btn_listmember = document.getElementById('list-member')
+    const ip_message = document.getElementById('ip_message');
+    const btn_send = document.getElementById('btn_send');
+    const ip_userID = document.getElementById('ip_user').value;
+    const ul_listuser = document.querySelector('.list_user');
+    const ul_listmes = document.querySelector('#ul_mes')
+    const choose_emotion = document.getElementsByClassName('choose_emotion')
+    const container = document.querySelector('.container')
+    const userreceiver = document.getElementById('userreceiver')
+    const btn_listonline = document.getElementById('list-online')
+    const btn_listfriend = document.getElementById('list-friend')
+    const btn_listgroup = document.getElementById('list-group')
+    const ip_image = document.getElementById('ip_image')
+    const img_mes = document.getElementById('img_mes')
+
+    //list thành viên nhóm
+    function listmember(groupname) {
+      btn_listmember.addEventListener('click', ()=>{
+        socket.emit('client-list-member-group', groupname, ip_userID)
+      })
+    }
+
+    socket.on('client-member-group', async (data, userid) => {
+      container.style.display = 'block'
+      ul_listmes.innerHTML = ''
+      const div = document.createElement('div')
+      const btn_create = document.createElement('button')
+      const input = document.createElement('input')
+
+      div.classList.add('div-member')
+      input.classList.add('ip-create-member')
+      btn_create.classList.add('btn-create-member')
+
+      btn_create.innerHTML = 'thêm thành viên'
+
+      div.appendChild(input)
+      div.appendChild(btn_create)
+      ul_listmes.appendChild(div)
+
+      data.forEach(item => {
+        if(userid){
+          const li = document.createElement('li')
+          const span = document.createElement('span')
+  
+          li.classList.add('member-info')
+          span.classList.add('member-name')
+  
+          span.innerHTML = item.membername
+          li.appendChild(span)
+  
+          if(item.permission==='quản trị viên'){
+            const div = document.createElement('div')
+            div.classList.add('position')
+            div.innerHTML = 'quản trị viên'
+            li.appendChild(div)
+          }else{
+            const btn_promote = document.createElement('button')
+            const btn_remove = document.createElement('button')
+            btn_promote.id = item.membername
+            btn_remove.id = item.membername
+            btn_promote.classList.add('btn-promote')
+            btn_remove.classList.add('btn-remove')
+            btn_promote.innerHTML = 'thăng QTV'
+            btn_remove.innerHTML = 'loại TV'
+            li.appendChild(btn_promote)
+            li.appendChild(btn_remove)
+          }
+          ul_listmes.appendChild(li)
+        }else{
+          const li = document.createElement('li')
+          const span = document.createElement('span')
+  
+          li.classList.add('member-info')
+          span.classList.add('member-name')
+  
+          span.innerHTML = item.membername
+          li.appendChild(span)
+          if(item.permission==='quản trị viên'){
+            const div = document.createElement('div')
+            div.classList.add('position')
+            div.innerHTML = 'quản trị viên'
+            li.appendChild(div)
+          }else{
+            const div = document.createElement('div')
+            div.innerHTML = ''
+            li.appendChild(div)
+          }
+          ul_listmes.appendChild(li)
+        }
+      })
+      const btn_create_member = document.querySelector('.btn-create-member')
+
+      //thêm thành viên
+      btn_create_member.addEventListener('click', ()=>{
+        socket.emit('client-more-member', userreceiver.textContent, input.value, ip_userID)
+      })
+
+
+      const btn_promotes = document.querySelectorAll('.btn-promote')
+      promote(btn_promotes)
+      const btn_removes = document.querySelectorAll('.btn-remove')
+      remove(btn_removes)
+    })
+
+    //thăng quản trị viên
+    function promote(data){
+      data.forEach(item => {
+        item.addEventListener('click', (e)=>{
+          console.log(e.target)
+          socket.emit('client-promote-member', userreceiver.textContent, e.target.id, ip_userID)
+        })
+      })
+    }
+
+
+    //loại thành viên
+    function remove(data){
+      data.forEach(item => {
+        item.addEventListener('click', (e)=>{
+          socket.emit('client-delete-member', userreceiver.textContent, e.target.id, ip_userID)
+        })
+      })
+    }
+
+
+    //list friend
+    btn_listfriend.addEventListener('click', () => {
+      socket.emit('client-list-friend', ip_userID)
+    })
+    socket.on('server-list-friend', data => {
+      btn_listfriend.style.backgroundColor = "gray"
+      btn_listonline.style.backgroundColor = ""
+      btn_listgroup.style.backgroundColor = ""
+      ul_listuser.innerHTML = ''
+      const btn_friend = document.createElement('button')
+      const btn_invitation = document.createElement('button')
+      const btn_sendinvitation = document.createElement('button')
+      const div = document.createElement('div')
+      div.classList.add('div-friend')
+      btn_friend.classList.add('btn-friend')
+      btn_invitation.classList.add('btn-invitation')
+      btn_sendinvitation.classList.add('btn-sendinvitation')
+
+      btn_friend.innerHTML = 'bạn bè'
+      btn_invitation.innerHTML = 'lời mời'
+      btn_sendinvitation.innerHTML = 'gửi lời mời'
+
+      div.appendChild(btn_friend)
+      div.appendChild(btn_invitation)
+      div.appendChild(btn_sendinvitation)
+
+      ul_listuser.appendChild(div)
+
+      btn_friend.style.backgroundColor = "gray"
+      btn_invitation.style.backgroundColor = ""
+      btn_sendinvitation.style.backgroundColor = ""
+      data.forEach(item => {
+        const li = document.createElement('li')
+        li.classList.add('user_name')
+        li.innerHTML = item.name
+        ul_listuser.appendChild(li)
+      })
+      btn_friend.addEventListener('click', ()=>{
+        socket.emit('client-list-friend', ip_userID)
+      })
+      btn_invitation.addEventListener('click', ()=>{
+        socket.emit('client-list-invitation', ip_userID)
+      })
+      btn_sendinvitation.addEventListener('click', ()=>{
+        socket.emit('client-list-sendinvitation', ip_userID)
+      })
+      const list_user = document.querySelectorAll('.user_name');
+      receiver(list_user);
+    })
+
+    //list lời mời kết bạn
+    socket.on('server-list-invitation', data => {
+      btn_listfriend.style.backgroundColor = "gray"
+      btn_listonline.style.backgroundColor = ""
+      btn_listgroup.style.backgroundColor = ""
+      ul_listuser.innerHTML = ''
+      const btn_friend = document.createElement('button')
+      const btn_invitation = document.createElement('button')
+      const btn_sendinvitation = document.createElement('button')
+      const div = document.createElement('div')
+      div.classList.add('div-friend')
+      btn_friend.classList.add('btn-friend')
+      btn_invitation.classList.add('btn-invitation')
+      btn_sendinvitation.classList.add('btn-sendinvitation')
+
+      btn_friend.innerHTML = 'bạn bè'
+      btn_invitation.innerHTML = 'lời mời'
+      btn_sendinvitation.innerHTML = 'gửi lời mời'
+
+      div.appendChild(btn_friend)
+      div.appendChild(btn_invitation)
+      div.appendChild(btn_sendinvitation)
+
+      ul_listuser.appendChild(div)
+
+      btn_friend.style.backgroundColor = ""
+      btn_invitation.style.backgroundColor = "gray"
+      btn_sendinvitation.style.backgroundColor = ""
+      btn_friend.addEventListener('click', ()=>{
+        socket.emit('client-list-friend', ip_userID)
+      })
+      btn_invitation.addEventListener('click', ()=>{
+        socket.emit('client-list-invitation', ip_userID)
+      })
+      btn_sendinvitation.addEventListener('click', ()=>{
+        socket.emit('client-list-sendinvitation', ip_userID)
+      })
+      data.forEach(item => {
+        const li = document.createElement('li')
+        const span = document.createElement('span')
+        const btn_accept = document.createElement('button')
+        const btn_cancel = document.createElement('button')
+        span.classList.add('user_name')
+        btn_accept.classList.add('btn-accept')
+        btn_cancel.classList.add('btn-cancel')
+        li.classList.add('user')
+        span.innerHTML = item.name
+        btn_accept.innerHTML = 'chấp nhận'
+        btn_cancel.innerHTML = 'hủy'
+        btn_accept.id = item.name
+        btn_cancel.id = item.name
+        li.appendChild(span)
+        li.appendChild(btn_accept)
+        li.appendChild(btn_cancel)
+        ul_listuser.appendChild(li)
+      })
+      const list_accept = document.querySelectorAll('.btn-accept')
+      const list_cancel = document.querySelectorAll('.btn-cancel')
+      accept(list_accept)
+      cancel(list_cancel)
+      const list_user = document.querySelectorAll('.user_name');
+      receiver(list_user);
+    })
+
+    //chấp nhận kết bạn
+    function accept(data){
+      data.forEach(item => {
+        item.addEventListener('click', function(event) {
+          const userreceiver = event.target.id
+          socket.emit('client-accept', ip_userID, userreceiver);
+        });
+      });
+    }
+
+    //không chấp nhận kết bạn
+    function cancel(data){
+      data.forEach(item => {
+        item.addEventListener('click', function(event) {
+          const userreceiver = event.target.id
+          socket.emit('client-cancel', ip_userID, userreceiver);
+        });
+      });
+    }
+
+    //list gửi lời mời kết bạn
+    socket.on('server-list-sendinvitation', data => {
+      btn_listfriend.style.backgroundColor = "gray"
+      btn_listonline.style.backgroundColor = ""
+      btn_listgroup.style.backgroundColor = ""
+      ul_listuser.innerHTML = ''
+      const btn_friend = document.createElement('button')
+      const btn_invitation = document.createElement('button')
+      const btn_sendinvitation = document.createElement('button')
+      const div = document.createElement('div')
+      div.classList.add('div-friend')
+      btn_friend.classList.add('btn-friend')
+      btn_invitation.classList.add('btn-invitation')
+      btn_sendinvitation.classList.add('btn-sendinvitation')
+
+      btn_friend.innerHTML = 'bạn bè'
+      btn_invitation.innerHTML = 'lời mời'
+      btn_sendinvitation.innerHTML = 'gửi lời mời'
+
+      div.appendChild(btn_friend)
+      div.appendChild(btn_invitation)
+      div.appendChild(btn_sendinvitation)
+
+      ul_listuser.appendChild(div)
+
+      btn_friend.style.backgroundColor = ""
+      btn_invitation.style.backgroundColor = ""
+      btn_sendinvitation.style.backgroundColor = "gray"
+      btn_friend.addEventListener('click', ()=>{
+        socket.emit('client-list-friend', ip_userID)
+      })
+      btn_invitation.addEventListener('click', ()=>{
+        socket.emit('client-list-invitation', ip_userID)
+      })
+      btn_sendinvitation.addEventListener('click', ()=>{
+        socket.emit('client-list-sendinvitation', ip_userID)
+      })
+      data.forEach(item => {
+        const li = document.createElement('li')
+        const span = document.createElement('span')
+        const btn_canceluser = document.createElement('button')
+
+        span.classList.add('user_name')
+        li.classList.add('user')
+        btn_canceluser.classList.add('btn-cancel-user')
+        btn_canceluser.id = item.name
+
+        btn_canceluser.innerHTML = 'hủy kết bạn'
+        span.innerHTML = item.name
+
+        li.appendChild(span)
+        li.appendChild(btn_canceluser)
+        ul_listuser.appendChild(li)
+      })
+      const list_accept = document.querySelectorAll('.btn-cancel-user')
+      cancel(list_accept)
+      const list_user = document.querySelectorAll('.user_name');
+      receiver(list_user);
+    })
+
+    //list group
+    btn_listgroup.addEventListener('click', () => {
+      socket.emit('client-list-group', ip_userID)
+    })
+
+    socket.on('server-list-group', data => {
+      showgroup(data)
+    })
+
+    //hiện group
+    function showgroup(data){
+      btn_listfriend.style.backgroundColor = ""
+      btn_listonline.style.backgroundColor = ""
+      btn_listgroup.style.backgroundColor = "gray"
+      ul_listuser.innerHTML = ''
+      const input = document.createElement('input');
+      const div = document.createElement('div')
+      const btn_search = document.createElement('button')
+      btn_search.classList.add('btn-search')
+      input.classList.add('create-group')
+      btn_search.innerHTML = 'tạo nhóm'
+      div.appendChild(input)
+      div.appendChild(btn_search)
+      ul_listuser.appendChild(div)
+      data.forEach(item => {
+        const li = document.createElement('li');
+        li.classList.add('group');
+        li.innerHTML = item.name;
+        ul_listuser.appendChild(li);
+      })
+      btn_search.addEventListener('click', ()=>{
+        socket.emit('client-create-group', ip_userID, input.value)
+      })
+      const list_group = document.querySelectorAll('.group')
+      receivergroup(list_group)
+    }
+
+    //hiển thị những biểu tượng cảm xúc
+    function show(e, id){
+      if(e.target.classList.contains('choose_emotion')){
+        if(e.target.innerHTML.toString().trim().length==0){
+          e.target.innerHTML = `
+        <div class="emotions">
+          <i onclick="choose(event, '${id}')" class="fa-solid fa-heart" style="color: #e92b90;"></i>
+          <i onclick="choose(event, '${id}')" class="fa-solid fa-face-grin-tears" style="color: #e92b90;"></i>
+          <i onclick="choose(event, '${id}')" class="fa-solid fa-face-sad-tear" style="color: #e92b90;"></i>
+        </div>
+        `
+        }else{
+          e.target.innerHTML = ``
+        }
+      }
+    }
+
+    //gửi cảm xúc
+    function choose(e, id){
+      const classemotion = e.target.classList[1]
+      const emotion = `<i class="fa-solid ${classemotion}" style="color: #e92b90;"></i>`
+      socket.emit('client-send-emotion', emotion, userreceiver.textContent, id, ip_userID)
+    }
+
+    //chọn nhóm muốn nhắn tin
+    function receivergroup(data){
+      data.forEach(item => {
+        item.addEventListener('click', function(event) {
+          const receivergroup = event.target.textContent;
+          socket.emit('client-receivergroup', ip_userID, receivergroup);
+        });
+      });
+    }
+
+    socket.on('server-mes-group', (namegroup, data)=>{
+      container.style.display = 'block'
+      userreceiver.innerHTML = ''
+      tool.style.display = 'flex'
+      userreceiver.innerHTML = namegroup
+      listmember(namegroup)
+      showmes(data)
+    })
+
+    //chọn đối tượng muốn nhắn tin
+    function receiver(data){
+      data.forEach(item => {
+        item.addEventListener('click', function(event) {
+          const userreceiver = event.target.textContent;
+          socket.emit('client-receiver', ip_userID, userreceiver);
+        });
+      });
+    }
+    socket.on('server-receiver', (userreceivers, contentmes) => {
+      container.style.display = "block"
+      userreceiver.innerHTML = ''
+      userreceiver.innerHTML = userreceivers
+      tool.style.display = 'none'
+      showmes(contentmes)
+    })
+
+    //chọn đối tượng muốn kết bạn
+    function createfriend(data){
+      data.forEach(item => {
+        item.addEventListener('click', function(event) {
+          const userreceiver = event.target.id
+          socket.emit('client-create-friend', ip_userID, userreceiver);
+        });
+      });
+    }
+
+    //hiển thị tin nhắn
+    function showmes(data){
+      ul_listmes.innerHTML = ''
+      data.forEach(async item => {
+        const index = item.emotions.length - 1
+        let li = document.createElement('li');
+        if(ip_userID!=item.sender_id){
+          if(item.messages_content){
+            li.innerHTML = `<span id="${item._id}">
+              <p>${item.messages_content}</p>
+              ${index>=0 ? item.emotions[index] : ''}
+            </span>
+            <i onclick="show(event, '${item._id}')" class="choose_emotion fa-solid fa-face-smile-beam" style="color: #fd2179;"></i>`
+            ul_listmes.appendChild(li);
+          }
+          if(item.file_name){
+            li.innerHTML = `<span id="${item._id}">
+              <p><img style="width: 200px;" src="/image/${item.file_name}" alt=""></p>
+              ${index>=0 ? item.emotions[index] : ''}
+            </span>
+            <i onclick="show(event, '${item._id}')" class="choose_emotion fa-solid fa-face-smile-beam" style="color: #fd2179;"></i>`
+            ul_listmes.appendChild(li);
+          }
+        }else{
+          if(item.messages_content){
+            li.classList.add('right')
+            let span = document.createElement('span');
+            let p = document.createElement('p')
+            li.innerHTML = `<span id="${item._id}">
+              <p>${item.messages_content}</p>
+              ${index>=0 ? item.emotions[index] : ''}
+            </span>
+            <i onclick="show(event, '${item._id}')" class="choose_emotion fa-solid fa-face-smile-beam" style="color: #fd2179;"></i>`
+            ul_listmes.appendChild(li);
+          }
+          if(item.file_name){
+            li.classList.add('right')
+            let span = document.createElement('span');
+            let p = document.createElement('p')
+            li.innerHTML = `<span id="${item._id}">
+              <p><img style="width: 200px;" src="/image/${item.file_name}" alt=""></p>
+              ${index>=0 ? item.emotions[index] : ''}
+            </span>
+            <i onclick="show(event, '${item._id}')" class="choose_emotion fa-solid fa-face-smile-beam" style="color: #fd2179;"></i>`
+            ul_listmes.appendChild(li);
+          }
+        }
+      })
+    }
+
+
+    //người dùng online
+    socket.emit('client-verifi', ip_userID);
+    btn_listonline.addEventListener('click', ()=>{
+      socket.emit('client-verifi', ip_userID);
+    })
+
+    //list user online
+    socket.on('server-list-online', (listuser, friendID) => {
+      btn_listfriend.style.backgroundColor = ""
+      btn_listonline.style.backgroundColor = "gray"
+      btn_listgroup.style.backgroundColor = ""
+      ul_listuser.innerHTML = ''
+      listuser.forEach(obj => {
+        if(ip_userID!=obj._id){
+          if(friendID){
+            var check = friendID.some(user => (user.sender_id===ip_userID && user.receiver_id===obj._id) || user.sender_id===obj._id && user.receiver_id===ip_userID );
+          }else{
+            var check = false
+          }
+          if(check){
+          const li = document.createElement('li');
+          const div = document.createElement('div');
+          li.classList.add('user');
+          div.classList.add('user_name');
+          div.innerHTML = obj.name;
+          li.appendChild(div);
+          ul_listuser.appendChild(li);
+          }else{
+            const li = document.createElement('li');
+            const div = document.createElement('div');
+            const btn = document.createElement('button');
+            li.classList.add('user');
+            div.classList.add('user_name');
+            btn.classList.add('btn_create');
+            btn.id = obj.name;
+            div.innerHTML = obj.name;
+            btn.innerHTML = 'thêm bạn';
+            li.appendChild(div);
+            li.appendChild(btn);
+            ul_listuser.appendChild(li);
+          }
+        }
+      })
+      const list_user = document.querySelectorAll('.user_name');
+      receiver(list_user);
+      const createElement = document.querySelectorAll('.btn_create')
+      createfriend(createElement);
+    })
+
+    //gửi tin nhắn
+    btn_send.addEventListener('click', async () => {
+      const message = ip_message.value;
+      if(ip_image.files[0]){
+        const form_data = new FormData()
+        form_data.append('image', ip_image.files[0])
+        const response  = await fetch('/uploads', {method: "POST", body: form_data})
+        const result = await response.json()
+        ip_image.value = null
+        socket.emit('client-send-image', result.url, ip_userID, userreceiver.textContent)
+        img_mes.style.display = 'none'
+        return 
+      }
+      if(!message){
+        return
+      }
+      socket.emit('client-send-message', message, ip_userID, userreceiver.textContent);
+      ip_message.value = ''
+      ip_message.focus()
+    })
+    socket.on('server-send-mes', mes => {
+      showmes(mes)
+    })
+
+    ip_image.addEventListener('change', ()=>{
+      img_mes.src = URL.createObjectURL(ip_image.files[0])
+      img_mes.style.display = 'block'
+    })
+
+  </script>
+</body>
+
+</html>

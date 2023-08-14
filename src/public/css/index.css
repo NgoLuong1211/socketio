@@ -1,0 +1,286 @@
+body, * {
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    background-color: antiquewhite;
+}
+
+.container{
+    width: 400px;
+    margin: 10px auto;
+    height: 100vh;
+    padding: 10px;
+    box-sizing: border-box;
+    background-color: aqua;
+    display: none;
+}
+
+#ul_mes{
+    list-style: none;
+    width: 100%;
+    height: 90%;
+    overflow: scroll;
+}
+
+#ul_mes li {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+#ul_mes li span{
+    position: relative;
+}
+
+#ul_mes li span i{
+    position: absolute;
+    top: 23px;
+    left: 5px;
+    background-color: aliceblue;
+    border-radius: 50%;
+}
+
+#ul_mes li span p{
+    width: fit-content;
+    background-image: linear-gradient(rgb(235, 126, 219), rgb(204, 0, 255));
+    padding: 5px;
+    color: white;
+    border-radius: 8px;
+    float: left;
+    clear: both;
+    margin: 3px 0;
+}
+
+
+.choose_emotion{
+    margin: 0 5px;
+    display: none !important;
+    position: relative;
+}
+
+#ul_mes li:hover .choose_emotion {
+    display: block !important;
+}
+
+.emotions{
+    background-color:antiquewhite;
+    padding: 5px;
+    border-radius: 12px;
+    position: absolute;
+    bottom: -35px;
+    display: flex;
+}
+
+.emotions i{
+    margin: 4px;
+}
+
+.emotions i:hover{
+    transform: scale(1.5);
+    transition: linear 0.2s;
+}
+
+.right{
+    flex-direction: row-reverse;
+    margin-right: 10px;
+}
+
+.right .choose_emotion .emotions {
+    right: 0px;
+}
+
+
+.container_send {
+    width: 100%;
+    height: 5%;
+    display: flex;
+}
+
+#ip_message {
+    width: 80%;
+    padding: 10px;
+}
+
+#btn_send{
+    width: 20%;
+    padding: 10px;
+}
+
+.list{
+    list-style: none;
+    width: 25%;
+    padding: 20px;
+    margin: 10 auto;
+    background-color:aqua;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.btn-list{
+    display: flex;
+}
+.btn-list button{
+    width: 27%;
+    height: 30px;
+    margin: 0 7px;
+}
+
+.list_user{
+    list-style: none;
+    width: 100%;
+    padding: 20px;
+    margin: 10 auto;
+    height: 90vh;
+    box-sizing: border-box;
+    overflow: scroll;
+}
+
+.list_user li {
+    background-color:rgb(15, 227, 149);
+    border-radius: 14px;
+    padding: 10px;
+    margin: 5px auto;
+}
+
+.list_user div button {
+    border-radius: 14px;
+    padding: 10px;
+    margin: 5px auto;
+}
+
+.list_user div {
+    display: flex;
+}
+
+.user{
+    display: flex;
+}
+
+.user_name{
+    width: 60%;
+}
+
+.btn-accept{
+    width: 26%;
+    background-color: rgb(15, 166, 231);
+    border-radius: 5px;
+    margin: 0 2px;
+}
+
+.btn-cancel{
+    width: 12%;
+    background-color: rgb(222, 42, 14);
+    border-radius: 3px;
+}
+
+.btn_create{
+    border-radius: 5px;
+    background-color: aqua;
+    width: 30%;
+    margin: 0 2px;
+}
+
+#tools{
+    width: 100%;
+    height: 5%;
+    display: none;
+    margin-bottom: 3px;
+}
+
+#out-group{
+    border-radius: 10px;
+    text-align: center;
+    width: 48%;
+    height: 100%;
+    background-color: rgb(230, 16, 16);
+    color:aliceblue;
+    margin: 0 3px;
+}
+
+#list-member{
+    border-radius: 10px;
+    text-align: center;
+    width: 48%;
+    height: 100%;
+    background-color: rgb(67, 22, 247);
+    color:aliceblue;
+    margin: 0 3px;
+}
+
+#userreceiver{
+    width: 100%;
+    height: 5%;
+    background-color: rgb(207, 232, 44);
+    text-align: center;
+}
+
+
+.create-group{
+    margin: 5px 3px;
+    width: 180px;
+    height: 30px;
+    border-radius: 10px;
+}
+
+.btn-search{
+    background-color:bisque;
+    width: 80px;
+    height: 30px;
+    border-radius: 10px;
+}
+/* thành viên nhóm */
+.div-member{
+    width: 100%;
+    height: 5%;
+    display: flex;
+    margin: 5px 0;
+}
+
+.ip-create-member{
+    width: 70%;
+    border-radius: 7px;
+}
+
+.btn-create-member{
+    width: 30%;
+    border-radius: 5px;
+    background-color: rgb(14, 243, 167);
+}
+
+.member-info{
+    width: 100%;
+    height: 5%;
+    background-color:beige;
+    display: flex;
+    border-radius: 7px;
+}
+
+.member-name{
+    width: 60%;
+}
+
+.position{
+    width: 40%;
+}
+
+.btn-promote{
+    width: 24%;
+    border-radius: 5px;
+    background-color: blue;
+    color: aliceblue;
+    margin: 0 2px;
+}
+
+.btn-remove{
+    width: 14%;
+    border-radius: 5px;
+    background-color: rgb(213, 22, 22);
+    margin: 0 2px;
+    color: aliceblue;
+}
+
+
+  
+  

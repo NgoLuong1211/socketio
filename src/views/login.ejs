@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Đăng nhập</title>
+  <!-- Link thư viện Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <!-- Đăng nhập Form -->
+        <div class="card">
+          <div class="card-header">
+            <h4>Đăng nhập</h4>
+          </div>
+          <div class="card-body">
+            <form action="/login" method="POST">
+              <div class="form-group">
+                <label for="loginUsername">Tên người dùng:</label>
+                <input type="text" name="account" class="form-control" id="loginUsername" required>
+              </div>
+              <div class="form-group">
+                <label for="loginPassword">Mật khẩu:</label>
+                <input type="password" name="password" class="form-control" id="loginPassword" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Đăng nhập</button>
+              <a href="/register" class="btn btn-success btn-block">Đăng kí</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>
