@@ -16,36 +16,6 @@ class SocketService {
             id = ID
             await _user.updateOne({ _id: id }, { $set: { socketId: socket.id, is_online: true } });
             await _groupMembers.updateMany({ user_id: id }, { $set: { is_online: true } });
-            const groups = await _groupMembers.aggregate([
-                {
-                    $match: { user_id: id },
-                },
-                {
-                    $lookup: {
-                        from: 'group',
-                        localField: 'group_id',
-                        foreignField: '_id',
-                        as: 'groupInfo',
-                    },
-                },
-                {
-                    $unwind: '$groupInfo',
-                },
-                {
-                    $project: {
-                        id: '$groupInfo.id',
-                        name: '$groupInfo.name',
-                    },
-                },
-            ])
-
-            const groupID = []
-
-            groups.forEach((obj) => {
-                socket.join(obj.name);
-                groupID.push(obj.id);
-            })
-            await _group.updateMany({_id: { $in: groupID }}, {has_online_bool: true});
             const list_online = await _user.find({is_online: true})
 
 
@@ -1043,63 +1013,6 @@ class SocketService {
             console.log('có người ngắt kết nối: ' + socket.id);
             await _user.updateOne({ _id: id }, { $set: { is_online: false } });
             await _groupMembers.updateMany({ user_id: id }, { $set: { is_online: false } });
-            const groups = await _groupMembers.aggregate([
-                {
-                    $match: { user_id: id },
-                },
-                {
-                    $lookup: {
-                        from: 'group',
-                        localField: 'group_id',
-                        foreignField: '_id',
-                        as: 'groupInfo',
-                    },
-                },
-                {
-                    $unwind: '$groupInfo',
-                },
-                {
-                    $project: {
-                        id: '$groupInfo.id',
-                        has_online_bool: '$groupInfo.has_online_bool',
-                    },
-                },
-            ])
-            const groupID = []
-
-            groups.forEach((obj) => {
-                if(has_online_bool){
-                    groupID.push(obj.id);
-                }
-            })
-            //lấy được các group cần chuyển has_online_bool thành flase
-            const statusgroup = await _group.aggregate([
-                {
-                    $match: {
-                        _id: { $in: groupID }
-                    }
-                },
-                {
-                  $lookup: {
-                    from: "group_members",
-                    localField: "_id",
-                    foreignField: "group_id",
-                    as: "members"
-                  }
-                },
-                {
-                    $match: {
-                        $expr: {
-                          $eq: [{ $size: "$members" }, { $size: { $filter: { input: "$members", as: "m", cond: { $eq: ["$$m.is_online", false] } } } }]
-                        }
-                      }
-                },
-                {
-                    $project: {
-                        _id: 1
-                    }
-                }
-              ])
         });
     }
 }
